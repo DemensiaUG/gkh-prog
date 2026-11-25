@@ -1,0 +1,5 @@
+backend/gkh.db
+backend/uploads/
+node_modules/
+dist/
+*.exe
