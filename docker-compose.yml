@@ -1,0 +1,23 @@
+services:
+  backend:
+    build: ./backend
+    container_name: gkh-backend
+    ports:
+      - "8091:8091"
+    volumes:
+      - gkh-data:/app/data          # база данных
+      - gkh-uploads:/app/uploads    # чеки и квитанции
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: gkh-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  gkh-data:
+  gkh-uploads:
