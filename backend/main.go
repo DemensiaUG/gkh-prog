@@ -68,6 +68,9 @@ func main() {
 	if v := os.Getenv("GKH_DB"); v != "" {
 		dbPath = v
 	}
+	if v := os.Getenv("DATABASE_PATH"); v != "" {
+		dbPath = v
+	}
 	if v := os.Getenv("GKH_UPLOADS"); v != "" {
 		uploadsDir = v
 	}
@@ -75,17 +78,17 @@ func main() {
 		port = v
 	}
 
-	dbPath := os.Getenv("DATABASE_PATH")
-	if dbPath == "" {
-		dbPath = "gkh.db" // локально: файл рядом с запускаемым бинарником
-	}
 	db, err := sql.Open("sqlite", "file:"+dbPath)
-
 	if err != nil {
 		log.Fatal(err)
 	}
 	store := NewStore(db)
 	if err := store.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Папка для чеков: в контейнере её нет — создаём.
+	if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
 		log.Fatal(err)
 	}
 
