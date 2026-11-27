@@ -3,3 +3,6 @@ backend/uploads/
 node_modules/
 dist/
 *.exe
+.env
+.idea/
+.vscode/
