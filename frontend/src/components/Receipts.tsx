@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import { api } from '../api';
 import type { Receipt, ServiceStatus } from '../types';
 
+const API_URL = import.meta.env.VITE_API_URL ?? "";
+
 const currentMonth = () => new Date().toISOString().slice(0, 7);
 
 export function Receipts({ services, month, setMonth, receipts, onChanged }: {
@@ -71,7 +73,7 @@ export function Receipts({ services, month, setMonth, receipts, onChanged }: {
                   {r.month}{r.service && ` · ${r.service}`} · {r.uploaded_at}
                 </span>
               </span>
-              <a className="btn" href={`/api/receipts/${r.id}/file`} target="_blank"
+              <a className="btn" href={`${API_URL}/api/receipts/${r.id}/file`} target="_blank"
                 rel="noreferrer">Открыть</a>
               <button className="btn btn-danger" onClick={() => remove(r.id)}>✕</button>
             </li>
