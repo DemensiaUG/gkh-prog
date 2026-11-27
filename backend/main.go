@@ -75,7 +75,12 @@ func main() {
 		port = v
 	}
 
-	db, err := sql.Open("sqlite", "file:"+dbPath+"?_pragma=foreign_keys(1)")
+	dbPath := os.Getenv("DATABASE_PATH")
+	if dbPath == "" {
+		dbPath = "gkh.db" // локально: файл рядом с запускаемым бинарником
+	}
+	db, err := sql.Open("sqlite", "file:"+dbPath)
+
 	if err != nil {
 		log.Fatal(err)
 	}
