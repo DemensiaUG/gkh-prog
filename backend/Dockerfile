@@ -10,6 +10,7 @@ RUN CGO_ENABLED=0 go build -o /gkh .
 
 
 
+
 COPY . .
 RUN CGO_ENABLED=0 go build -o /gkh .
 
