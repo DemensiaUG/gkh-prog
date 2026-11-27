@@ -17,11 +17,12 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-// Пути настраиваются переменными окружения (нужно для Docker),
-// по умолчанию — как раньше, в рабочую папку.
+// Пути и порт настраиваются переменными окружения (Docker, Render),
+// по умолчанию — как раньше, для локального запуска.
 var (
 	dbPath     = "gkh.db"
 	uploadsDir = "uploads"
+	port       = "8091"
 )
 
 func cors(next http.Handler) http.Handler {
@@ -63,11 +64,15 @@ func parseOptionalID(s string) *int64 {
 }
 
 func main() {
+	// --- Конфигурация из окружения ---
 	if v := os.Getenv("GKH_DB"); v != "" {
 		dbPath = v
 	}
 	if v := os.Getenv("GKH_UPLOADS"); v != "" {
 		uploadsDir = v
+	}
+	if v := os.Getenv("PORT"); v != "" {
+		port = v
 	}
 
 	db, err := sql.Open("sqlite", "file:"+dbPath+"?_pragma=foreign_keys(1)")
@@ -81,9 +86,12 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+	// Проверка живости: /health (локально) и /healthz (Render)
+	health := func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, map[string]string{"status": "ok"})
-	})
+	}
+	mux.HandleFunc("GET /health", health)
+	mux.HandleFunc("GET /healthz", health)
 
 	// --- Службы ---
 	mux.HandleFunc("GET /api/services", func(w http.ResponseWriter, r *http.Request) {
@@ -238,7 +246,6 @@ func main() {
 		writeJSON(w, 200, list)
 	})
 
-	// Очистка всех показаний — для кнопки «Очистить все показания» во фронтенде
 	mux.HandleFunc("POST /api/readings/clear", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := db.Exec(`DELETE FROM readings`); err != nil {
 			writeErr(w, 500, "internal error")
@@ -310,7 +317,6 @@ func main() {
 			writeErr(w, 400, "invalid id")
 			return
 		}
-		// имя файла генерируем сами, так что подмена пути исключена
 		var filename string
 		if err := store.db.QueryRow(
 			`SELECT filename FROM receipts WHERE id = ?`, id).Scan(&filename); err != nil {
@@ -335,6 +341,6 @@ func main() {
 		w.WriteHeader(204)
 	})
 
-	log.Println("listening on :8091")
-	log.Fatal(http.ListenAndServe(":8091", cors(mux)))
+	log.Println("listening on :" + port)
+	log.Fatal(http.ListenAndServe(":"+port, cors(mux)))
 }

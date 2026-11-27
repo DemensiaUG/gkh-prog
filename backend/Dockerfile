@@ -13,7 +13,8 @@ FROM alpine:3.20
 WORKDIR /app
 
 COPY --from=build /gkh /app/gkh
-COPY schema.sql /app/schema.sql
+COPY backend/schema.sql /app/schema.sql
+
 
 # данные вне контейнера: база и чеки
 ENV GKH_DB=/app/data/gkh.db GKH_UPLOADS=/app/uploads
