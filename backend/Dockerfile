@@ -5,6 +5,9 @@ WORKDIR /src
 
 COPY backend/go.* ./
 RUN go mod download
+COPY backend/ .
+RUN CGO_ENABLED=0 go build -o /gkh .
+
 
 
 COPY . .
